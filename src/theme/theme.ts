@@ -1,14 +1,18 @@
 import {CSSProperties} from 'react';
-import {createGlobalStyle, ThemeProviderProps} from 'styled-components';
+import {createGlobalStyle, css, ThemeProviderProps} from 'styled-components';
 
 // Colors Palette https://colorhunt.co/
 export enum __COLORS {
   CTA = '#e94560',
-  TEXT = '#16213e',
   PRIMARY = '#0f3460',
+  SECONDARY = '#16213e',
   BLACK = '#000',
   WHITE = '#fff'
 }
+
+export const DEFAULT_GRADIENT = css`
+  background: ${`linear-gradient(225deg, ${__COLORS.SECONDARY}, ${__COLORS.PRIMARY})`};
+`;
 
 export const GUTTER = 15;
 export const SPACING = 8;
@@ -37,7 +41,7 @@ export enum __ALERTS {
 type Props = {};
 
 export const MainTheme: CSSProperties & Props = {
-  fontFamily: 'Open Sans, sans-serif'
+  fontFamily: 'Montserrat, sans-serif'
 };
 // You can either import a Google Font: https://fonts.google.com
 // Or declare a custom font: https://tinyurl.com/y6omstqa
@@ -58,10 +62,13 @@ export const GlobalStyle = createGlobalStyle<{
     margin: 0;
   }
   html,body {
+    height: 100%;
     margin: 0;
   }
   body {
     line-height: 1.5;
+    display: flex;
+    flex-direction: column;
   }
   html, body, div, span, applet, object, iframe,
   h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -76,7 +83,7 @@ export const GlobalStyle = createGlobalStyle<{
   figure, figcaption, footer, header, hgroup, 
   menu, nav, output, ruby, section, summary,
   time, mark, audio, video {
-    color: ${__COLORS.TEXT};
+    color: ${__COLORS.SECONDARY};
   }
   /* HTML5 display-role reset for older browsers */
   article, aside, details, figcaption, figure, 
@@ -100,5 +107,11 @@ export const GlobalStyle = createGlobalStyle<{
   table {
     border-collapse: collapse;
     border-spacing: 0;
+  }
+  #__next{
+    height: 100%;
+  }
+  button{
+    font-family: inherit;
   }
 `;

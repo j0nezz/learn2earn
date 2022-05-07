@@ -1,13 +1,23 @@
+import {NextPage} from 'next';
 import {AppProps} from 'next/app';
-import React from 'react';
+import React, {ReactElement, ReactNode} from 'react';
 import {ThemeProvider} from 'styled-components';
 import {GlobalStyle, MainTheme} from '../theme/theme';
 
-const App: React.FC<AppProps> = ({Component, pageProps}) => {
+type NextPageWithLayout = NextPage & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+const App: React.FC<AppPropsWithLayout> = ({Component, pageProps}) => {
+  const getLayout = Component.getLayout ?? (page => page);
+
   return (
     <ThemeProvider theme={MainTheme}>
       <GlobalStyle />
-      <Component {...pageProps} />
+      {getLayout(<Component {...pageProps} />)}
     </ThemeProvider>
   );
 };
