@@ -1,6 +1,7 @@
 import {NextPage} from 'next';
 import {AppProps} from 'next/app';
 import React, {ReactElement, ReactNode} from 'react';
+import {Toaster} from 'react-hot-toast';
 import {ThemeProvider} from 'styled-components';
 import {GlobalStyle, MainTheme} from '../theme/theme';
 
@@ -17,6 +18,7 @@ const App: React.FC<AppPropsWithLayout> = ({Component, pageProps}) => {
   return (
     <ThemeProvider theme={MainTheme}>
       <GlobalStyle />
+      <Toaster />
       {getLayout(<Component {...pageProps} />)}
     </ThemeProvider>
   );
