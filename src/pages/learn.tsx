@@ -12,6 +12,8 @@ import {functions} from '../lib/firebase';
 type Props = {};
 
 const helloWorld = httpsCallable<FillQuizRequestType>(functions, 'fillQuiz');
+const getMerkleRoot = httpsCallable(functions, 'getMerkleRoot');
+const getMerkleProof = httpsCallable(functions, 'getMerkleProof');
 
 const Learn = (props: Props) => {
   const {account, library} = useWeb3React();
@@ -30,11 +32,19 @@ const Learn = (props: Props) => {
         youtubeId: 'asdf',
         question: 'what is the correct answer?',
         ownerAddress: account,
+
         signature: await (library as Web3Provider)
           .getSigner(account)
           .signMessage(account)
       });
       console.log('RESULT', res.data);
+      const res1 = await getMerkleRoot({quizId: 2});
+      console.log('RESULT1', res1.data);
+      const res2 = await getMerkleProof({
+        quizId: 2,
+        address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4'
+      });
+      console.log('RESULT2', res2.data);
     } catch (e) {
       console.log(e);
     }

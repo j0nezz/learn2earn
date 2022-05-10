@@ -18,7 +18,8 @@
   "dependencies": {
     "ethers": "^5.6.5",
     "firebase-admin": "^10.0.2",
-    "firebase-functions": "^3.18.0"
+    "firebase-functions": "^3.18.0",
+    "merkletreejs": "^0.2.31"
   },
   "devDependencies": {
     "@typechain/ethers-v5": "^10.0.0",
