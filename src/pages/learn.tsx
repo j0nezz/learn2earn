@@ -10,12 +10,21 @@ import {functions} from '../lib/firebase';
 type Props = {};
 
 const helloWorld = httpsCallable(functions, 'helloWorld');
+const getMerkleRoot = httpsCallable(functions, 'getMerkleRoot');
+const getMerkleProof = httpsCallable(functions, 'getMerkleProof');
 
 const Learn = (props: Props) => {
   const {account} = useWeb3React();
   const getData = useCallback(async () => {
     const res = await helloWorld();
     console.log('RESULT', res.data);
+    const res1 = await getMerkleRoot({quizId: 2});
+    console.log('RESULT', res1.data);
+    const res2 = await getMerkleProof({
+      quizId: 2,
+      address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4'
+    });
+    console.log('RESULT', res2.data);
   }, []);
 
   return (
