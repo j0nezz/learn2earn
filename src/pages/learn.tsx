@@ -1,6 +1,8 @@
+import {Web3Provider} from '@ethersproject/providers';
 import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
 import React, {ReactElement, useCallback} from 'react';
+import {FillQuizRequestType} from '../../functions/src/fillQuiz';
 import {Button} from '../components/ui/Button';
 import {PageContainer} from '../components/ui/PageContainer';
 import {Bold, Medium} from '../components/ui/Typography';
@@ -9,14 +11,34 @@ import {functions} from '../lib/firebase';
 
 type Props = {};
 
-const helloWorld = httpsCallable(functions, 'helloWorld');
+const helloWorld = httpsCallable<FillQuizRequestType>(functions, 'fillQuiz');
 
 const Learn = (props: Props) => {
-  const {account} = useWeb3React();
+  const {account, library} = useWeb3React();
   const getData = useCallback(async () => {
-    const res = await helloWorld();
-    console.log('RESULT', res.data);
-  }, []);
+    if (!account) return;
+    try {
+      const res = await helloWorld({
+        quizId: 'id2',
+        answers: [
+          {id: 1, label: 'answer1'},
+          {id: 1, label: 'answer1'},
+          {id: 1, label: 'answer1'},
+          {id: 1, label: 'answer1'}
+        ],
+        correctAnswer: 1,
+        youtubeId: 'asdf',
+        question: 'what is the correct answer?',
+        ownerAddress: account,
+        signature: await (library as Web3Provider)
+          .getSigner(account)
+          .signMessage(account)
+      });
+      console.log('RESULT', res.data);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [account, library]);
 
   return (
     <PageContainer>

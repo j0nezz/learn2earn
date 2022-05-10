@@ -5,7 +5,7 @@ import Erc20ABI from './erc20.json';
 import {Erc20} from './types';
 
 export const DISTRIBUTOR_CONTRACT: ContractAddress = {
-  [SupportedChainId.ROPSTEN]: '0xB7ca508c83defd59eEc051003Ba1A97dDFF36b66'
+  [SupportedChainId.ROPSTEN]: '0x418fa747f875ab5bb07c7645c53bc05cd1c4ffea'
 };
 
 export function useErc20(token: ContractAddress) {
