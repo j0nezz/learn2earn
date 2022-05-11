@@ -1,8 +1,9 @@
 import {collection, CollectionReference, getDocs} from '@firebase/firestore';
 import {useWeb3React} from '@web3-react/core';
-import {ethers} from 'ethers';
+import {Flex} from 'axelra-styled-bootstrap-grid';
 import {GetServerSideProps} from 'next';
 import React, {ReactElement} from 'react';
+import QuizCard from '../components/QuizCard';
 import {PageContainer} from '../components/ui/PageContainer';
 import {Bold, Medium} from '../components/ui/Typography';
 import Web3Layout from '../layouts/web3.layout';
@@ -26,11 +27,11 @@ const Learn = ({quizes}: Props) => {
       ) : (
         <Medium>Use the connect Button in the Header</Medium>
       )}
-      {quizes.map(q => (
-        <div key={q.quizId}>
-          {q.tokenName} {ethers.utils.formatUnits(q.reward)}
-        </div>
-      ))}
+      <Flex row>
+        {quizes.map(q => (
+          <QuizCard key={q.quizId} quiz={q} />
+        ))}
+      </Flex>
     </PageContainer>
   );
 };

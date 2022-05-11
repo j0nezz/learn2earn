@@ -12,6 +12,7 @@ export type Quiz = {
   answers: QuestionAnswer[];
   correctAnswer: number;
   tokenName: string;
+  reward: string;
 };
 
 export type QuestionAnswer = {
