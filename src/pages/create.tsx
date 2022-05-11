@@ -27,11 +27,7 @@ const Create = (props: Props) => {
 
   const [token, setToken] = useState('');
   const [reward, setReward] = useState('');
-  const [quizId, setQuizId] = useState(
-    BigNumber.from(
-      '0x86fa47a788c869721abd28c13529e27cd50ec24b54678acd17e5fd5f664821bd'
-    ).toString()
-  );
+  const [quizId, setQuizId] = useState('');
   const [youtubeId, setYoutubeId] = useState('');
   const [question, setQuestion] = useState('');
 

@@ -1,5 +1,6 @@
 import {Spacer} from 'axelra-styled-bootstrap-grid';
 import {ethers} from 'ethers';
+import Link from 'next/link';
 import React from 'react';
 import styled from 'styled-components';
 import {Quiz} from '../types/firestore-types';
@@ -15,15 +16,19 @@ type Props = {
 };
 const QuizCard: React.FC<Props> = ({quiz}) => {
   return (
-    <Wrapper>
-      <Bold block size={'xl'} center>
-        {quiz.tokenName}
-      </Bold>
-      <Spacer x2 />
-      <Regular>
-        Reward: {ethers.utils.formatUnits(quiz.reward)} {quiz.tokenName}
-      </Regular>
-    </Wrapper>
+    <Link href={'/learn/' + quiz.quizId}>
+      <a>
+        <Wrapper>
+          <Bold block size={'xl'} center>
+            {quiz.tokenName}
+          </Bold>
+          <Spacer x2 />
+          <Regular>
+            Reward: {ethers.utils.formatUnits(quiz.reward)} {quiz.tokenName}
+          </Regular>
+        </Wrapper>
+      </a>
+    </Link>
   );
 };
 

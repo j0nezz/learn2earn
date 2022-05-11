@@ -2,6 +2,7 @@ import {NextPage} from 'next';
 import {AppProps} from 'next/app';
 import React, {ReactElement, ReactNode} from 'react';
 import {Toaster} from 'react-hot-toast';
+import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import {ThemeProvider} from 'styled-components';
 import {GlobalStyle, MainTheme} from '../theme/theme';
 

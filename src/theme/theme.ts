@@ -114,4 +114,10 @@ export const GlobalStyle = createGlobalStyle<{
   button{
     font-family: inherit;
   }
+  a{
+    text-decoration: none;
+  }
+  button{
+    border: none;
+  }
 `;
