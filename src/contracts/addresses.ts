@@ -6,7 +6,7 @@ import DistributorABI from './quiz-distributor.json';
 import {Erc20, QuizDistributor} from './types';
 
 export const DISTRIBUTOR_CONTRACT: ContractAddress = {
-  [SupportedChainId.ROPSTEN]: '0x418fa747f875ab5bb07c7645c53bc05cd1c4ffea'
+  [SupportedChainId.ROPSTEN]: '0x30195a222233081dca6d0dc4dcc09fb01fabb426'
 };
 
 export function useErc20(token: ContractAddress) {
