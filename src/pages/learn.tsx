@@ -11,7 +11,7 @@ import {functions} from '../lib/firebase';
 
 type Props = {};
 
-const helloWorld = httpsCallable<FillQuizRequestType>(functions, 'fillQuiz');
+const fillQuiz = httpsCallable<FillQuizRequestType>(functions, 'fillQuiz');
 const getMerkleRoot = httpsCallable(functions, 'getMerkleRoot');
 const getMerkleProof = httpsCallable(functions, 'getMerkleProof');
 
@@ -20,7 +20,7 @@ const Learn = (props: Props) => {
   const getData = useCallback(async () => {
     if (!account) return;
     try {
-      const res = await helloWorld({
+      const res = await fillQuiz({
         quizId: 'id2',
         answers: [
           {id: 1, label: 'answer1'},
@@ -50,6 +50,20 @@ const Learn = (props: Props) => {
     }
   }, [account, library]);
 
+  const getMerkle = useCallback(async () => {
+    try {
+      const res1 = await getMerkleRoot({quizId: 2});
+      console.log('RESULT1', res1.data);
+      const res2 = await getMerkleProof({
+        quizId: 2,
+        address: '0x5B38Da6a701c568545dCfcB03FcB875f56beddC4'
+      });
+      console.log('RESULT2', res2.data);
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
+
   return (
     <PageContainer>
       <Bold size={'xxxl'} gradient block>
@@ -61,6 +75,7 @@ const Learn = (props: Props) => {
         <Medium>Use the connect Button in the Header</Medium>
       )}
       <Button onClick={getData}>Get Data from Firebase</Button>
+      <Button onClick={getMerkle}>Get Merkle stuff from Firebase</Button>
     </PageContainer>
   );
 };
