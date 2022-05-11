@@ -1,8 +1,9 @@
-import {ethers} from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import * as functions from 'firebase-functions';
 import {db} from './config';
-import {distributorContract} from './contract';
-import {QuestionAnswer} from './types/QuestionAnswer';
+import {distributorContract, provider} from './contract';
+import {Erc20__factory} from './contracts/types';
+import {QuestionAnswer} from './types/firestore-types';
 
 export type FillQuizRequestType = {
   quizId: string;
@@ -45,9 +46,17 @@ export const fillQuiz = functions.https.onCall(
     }
 
     try {
-      const {token, owner: quizOwner} = await distributorContract.getQuiz(
-        quizId
-      );
+      const {
+        token,
+        owner: quizOwner,
+        reward
+      } = await distributorContract.getQuiz(BigNumber.from(quizId));
+      functions.logger.log('Connect to token: ', token);
+
+      const tokenContract = Erc20__factory.connect(token, provider);
+      const tokenName = await tokenContract.symbol();
+
+      functions.logger.log("Hello from info. Here's an object:", tokenName);
 
       if (quizOwner !== ownerAddress) {
         throw new functions.https.HttpsError(
@@ -56,15 +65,22 @@ export const fillQuiz = functions.https.onCall(
         );
       }
 
-      await db
-        .collection('quiz')
-        .doc(quizId)
-        .set({youtubeId, question: question, answers, ownerAddress, token});
+      await db.collection('quiz').doc(quizId).set({
+        youtubeId,
+        question: question,
+        answers,
+        ownerAddress,
+        token,
+        tokenName,
+        reward: reward.toString(),
+        quizId
+      });
 
       await db.collection('answers').doc(quizId).set({correctAnswer});
 
       return {youtubeId, question: question, answers, quizId};
     } catch (e) {
+      functions.logger.log('Error', e);
       throw new functions.https.HttpsError('internal', 'Internal Server Error');
     }
   }

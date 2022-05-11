@@ -25,4 +25,18 @@ initializeAuth(app, {
 export const db = getFirestore();
 
 export const functions = getFunctions(app);
-connectFunctionsEmulator(functions, 'localhost', 5001);
+
+const EMULATORS_STARTED = 'EMULATORS_STARTED';
+function startEmulators() {
+  // @ts-ignore
+  if (!global[EMULATORS_STARTED]) {
+    // @ts-ignore
+    global[EMULATORS_STARTED] = true;
+    connectFunctionsEmulator(functions, 'localhost', 5001);
+    //  connectFirestoreEmulator(db, 'localhost', 8080);
+  }
+}
+
+if (process.env.NODE_ENV === 'development') {
+  startEmulators();
+}
