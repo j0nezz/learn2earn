@@ -91,6 +91,10 @@ contract QuizDistributor {
         require(IERC20(quizzes[_quizId].token).transferFrom(quizzes[_quizId].spender, msg.sender, quizzes[_quizId].reward), "Distributor: transfer failed");
     }
 
+    function getQuiz(uint256 _quizId) public view returns (Quiz memory) {
+        return quizzes[_quizId];
+    }
+
     function getClaimedQuizzes(address _claimer) public view returns (uint256[] memory) {
         return claimedQuizzes[_claimer];
     }
