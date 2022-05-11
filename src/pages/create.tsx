@@ -35,7 +35,10 @@ const Create = (props: Props) => {
     async e => {
       try {
         e.preventDefault();
-        if (!account || !distributor) return;
+        if (!account || !distributor) {
+          console.log('No account or distributor');
+          return;
+        }
 
         const id = BigNumber.from(ethers.utils.randomBytes(32));
 

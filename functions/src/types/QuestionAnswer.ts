@@ -1,4 +1,4 @@
-export type QuizAnswer = {
+export type QuestionAnswer = {
   id: number;
   label: string;
 };

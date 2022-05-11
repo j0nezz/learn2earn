@@ -2,13 +2,13 @@ import {ethers} from 'ethers';
 import * as functions from 'firebase-functions';
 import {db} from './config';
 import {distributorContract} from './contract';
-import {QuizAnswer} from './types/QuizAnswer';
+import {QuestionAnswer} from './types/QuestionAnswer';
 
 export type FillQuizRequestType = {
   quizId: string;
   youtubeId: string;
   question: string;
-  answers: QuizAnswer[];
+  answers: QuestionAnswer[];
   correctAnswer: number;
   ownerAddress: string;
   signature: string;
@@ -45,15 +45,21 @@ export const fillQuiz = functions.https.onCall(
     }
 
     try {
-      // TODO get quiz owner from contract
-      // require quizOwner = ownerAddress
-      const res = await distributorContract.getMerkleRootTimestamp(1);
-      console.log('Merkle root timestamp', res.toString());
+      const {token, owner: quizOwner} = await distributorContract.getQuiz(
+        quizId
+      );
+
+      if (quizOwner !== ownerAddress) {
+        throw new functions.https.HttpsError(
+          'permission-denied',
+          'Not quizowner in contract'
+        );
+      }
 
       await db
         .collection('quiz')
         .doc(quizId)
-        .set({youtubeId, question: question, answers, ownerAddress});
+        .set({youtubeId, question: question, answers, ownerAddress, token});
 
       await db.collection('answers').doc(quizId).set({correctAnswer});
 
