@@ -7,12 +7,15 @@ import React, {ReactElement, useCallback, useMemo, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import {FillQuizRequestType} from '../../functions/src/fillQuiz';
 import {Button} from '../components/ui/Button';
+import {Input} from '../components/ui/Input';
 import {PageContainer} from '../components/ui/PageContainer';
 import {Bold, Medium} from '../components/ui/Typography';
 import {useQuizDistributor} from '../contracts/addresses';
+import {getRandomBigNumber} from '../helpers/getRandomBigNumber';
 import {waitAndEvaluateTx} from '../helpers/waitAndEvaluateTx';
 import Web3Layout from '../layouts/web3.layout';
 import {functions} from '../lib/firebase';
+import {QuestionAnswer} from '../types/firestore-types';
 
 type Props = {};
 
@@ -30,6 +33,11 @@ const Create = (props: Props) => {
   const [quizId, setQuizId] = useState('');
   const [youtubeId, setYoutubeId] = useState('');
   const [question, setQuestion] = useState('');
+  const [correctAnswer, setCorrectAnswer] = useState<QuestionAnswer>({
+    id: getRandomBigNumber().toNumber(),
+    label: ''
+  });
+  const [wrongAnswers, setWrongAnswers] = useState<QuestionAnswer[]>([]);
 
   const createQuiz = useCallback(
     async e => {
@@ -67,19 +75,14 @@ const Create = (props: Props) => {
   const fillQuizData = useCallback(
     async e => {
       e.preventDefault();
-      if (!account || !quizId || !library) return;
+      if (!account || !quizId || !library || !question) return;
       try {
         const res = await fillQuizCallable({
           quizId,
-          answers: [
-            {id: 1, label: 'answer1'},
-            {id: 1, label: 'answer1'},
-            {id: 1, label: 'answer1'},
-            {id: 1, label: 'answer1'}
-          ],
-          correctAnswer: 1,
+          answers: [correctAnswer, ...wrongAnswers],
+          correctAnswer: correctAnswer.id,
           youtubeId: 'asdf',
-          question: 'what is the correct answer?',
+          question,
           ownerAddress: account,
 
           signature: await library.getSigner(account).signMessage(account)
@@ -89,60 +92,97 @@ const Create = (props: Props) => {
         console.log(e);
       }
     },
-    [account, library, quizId]
+    [account, library, question, quizId]
   );
 
   const CreateQuizForm = useMemo(
     () => (
       <form onSubmit={createQuiz}>
-        <div>
-          <label>Token</label>
-          <input
-            type={'text'}
-            value={token}
-            onChange={e => setToken(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Reward</label>
-          <input
-            type={'number'}
-            value={reward}
-            onChange={e => setReward(e.target.value)}
-          />
-        </div>
+        <Input
+          value={token}
+          placeholder={'Token'}
+          name={'Token'}
+          onTextChange={setToken}
+        />
+        <Input
+          value={reward}
+          placeholder={'Reward'}
+          name={'Reward'}
+          onTextChange={setReward}
+          type={'number'}
+        />
         <Button type={'submit'}>Create Quiz</Button>
       </form>
     ),
     [createQuiz, reward, token]
   );
 
+  const addMoreAnswers = useCallback(() => {
+    setWrongAnswers(prev => [
+      ...prev,
+      {id: getRandomBigNumber().toNumber(), label: ''}
+    ]);
+  }, []);
+
+  const updateAnswerAtIndex = useCallback((idx: number, text: string) => {
+    setWrongAnswers(prev => [
+      ...prev.map((a, index) => (idx === index ? {id: a.id, label: text} : a))
+    ]);
+  }, []);
+
   const FillQuizForm = useMemo(
     () => (
       <Flex column>
         <Medium>Fill Data for Quiz ID: {quizId}</Medium>
         <form onSubmit={fillQuizData}>
-          <div>
-            <label>Youtube Id</label>
-            <input
+          <Input
+            value={youtubeId}
+            placeholder={'Youtube Id'}
+            name={'Youtube Id'}
+            onTextChange={setYoutubeId}
+            type={'text'}
+          />
+          <Input
+            value={question}
+            placeholder={'Question'}
+            name={'Question'}
+            onTextChange={setQuestion}
+            type={'text'}
+          />
+          <Input
+            value={correctAnswer.label}
+            placeholder={'Correct Answer'}
+            name={'Correct Answer'}
+            onTextChange={text =>
+              setCorrectAnswer(prev => ({id: prev.id, label: text}))
+            }
+            type={'text'}
+          />
+          <div onClick={addMoreAnswers}>Add more answers</div>
+          {wrongAnswers.map((a, i) => (
+            <Input
+              key={String(i)}
+              value={wrongAnswers[i].label}
+              placeholder={'Wrong Answer ' + String(i + 1)}
+              name={'Wrong Answer ' + String(i + 1)}
+              onTextChange={text => updateAnswerAtIndex(i, text)}
               type={'text'}
-              value={youtubeId}
-              onChange={e => setYoutubeId(e.target.value)}
             />
-          </div>
-          <div>
-            <label>Question</label>
-            <input
-              type={'string'}
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-            />
-          </div>
+          ))}
           <Button type={'submit'}>Update Quiz Data</Button>
         </form>
       </Flex>
     ),
-    [fillQuizData, question, quizId, youtubeId]
+    [
+      addMoreAnswers,
+      correctAnswer.label,
+      fillQuizData,
+      question,
+      quizId,
+      updateAnswerAtIndex,
+      wrongAnswers,
+      youtubeId
+    ]
   );
 
   return (

@@ -13,6 +13,7 @@ export type Quiz = {
   correctAnswer: number;
   tokenName: string;
   reward: string;
+  ownerAddress: string;
 };
 
 export type QuestionAnswer = {

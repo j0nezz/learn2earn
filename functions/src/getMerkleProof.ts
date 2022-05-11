@@ -4,7 +4,7 @@ import {getFirestoreData} from './helpers/firestore';
 import {merkletreeUtils} from './helpers/merkletree-utils';
 import {Answer, Quiz} from './types/firestore-types';
 
-type GetMerkleRootCallData = {
+export type GetMerkleRootCallData = {
   quizId: number;
   address: string;
 };
