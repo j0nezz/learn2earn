@@ -1,3 +1,4 @@
+export {answerQuiz} from './answerQuiz';
 export {fillQuiz} from './fillQuiz';
-export {getMerkleRoot} from './getMerkleRoot';
 export {getMerkleProof} from './getMerkleProof';
+export {getMerkleRoot} from './getMerkleRoot';
