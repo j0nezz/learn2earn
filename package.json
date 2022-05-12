@@ -13,6 +13,7 @@
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
     "axelra-styled-bootstrap-grid": "^0.7.4",
+    "date-fns": "^2.28.0",
     "dotenv": "^10.0.0",
     "ethers": "^5.6.5",
     "firebase": "^9.8.1",

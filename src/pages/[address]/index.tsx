@@ -1,4 +1,3 @@
-import {Web3Provider} from '@ethersproject/providers';
 import {
   collection,
   CollectionReference,
@@ -6,55 +5,33 @@ import {
   query,
   where
 } from '@firebase/firestore';
-import {useWeb3React} from '@web3-react/core';
-import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
+import {Spacer} from 'axelra-styled-bootstrap-grid';
 import {GetServerSideProps} from 'next';
-import React, {ReactElement, useCallback, useState} from 'react';
+import React, {ReactElement} from 'react';
 import QuizCard from '../../components/QuizCard';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
 import {db} from '../../lib/firebase';
 import {Quiz} from '../../types/firestore-types';
+import {QuizesGrid} from '../learn';
 
 type Props = {
   quizzes: Quiz[];
 };
 
 const Index = ({quizzes}: Props) => {
-  const [selected, setSelected] = useState<number | null>(null);
-  const [confirmed, setConfirmed] = useState<number | null>(null);
-  const {account, library} = useWeb3React();
-
-  const selectAnswer = useCallback(
-    async (id: number) => {
-      if (!library || !account) return;
-
-      setSelected(id);
-      const sign = await (library as Web3Provider)
-        .getSigner(account)
-        .signMessage(id.toString());
-
-      console.log(sign);
-
-      // TODO: callBackend({answer: id, quizId, signature})
-
-      setConfirmed(id);
-    },
-    [account, library]
-  );
-
   return (
     <PageContainer>
       <Bold size={'xxxl'} gradient block>
         Your Quizzes
       </Bold>
       <Spacer x2 />
-      <Flex row>
+      <QuizesGrid blur={false}>
         {quizzes.map(q => (
           <QuizCard key={q.quizId} quiz={q} />
         ))}
-      </Flex>
+      </QuizesGrid>
     </PageContainer>
   );
 };
@@ -85,8 +62,6 @@ export const getServerSideProps: GetServerSideProps<
       where('ownerAddress', '==', address)
     )
   );
-
-  // TODO get Answer of user
 
   const data = quizzesSnap.docs.map(q => q.data());
   return {

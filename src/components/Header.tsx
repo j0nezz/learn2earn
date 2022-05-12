@@ -10,20 +10,21 @@ import styled from 'styled-components';
 import {alpha} from '../theme/alpha';
 import {SPACING, __COLORS} from '../theme/theme';
 import AccountBadge from './AccountBadge';
-import {Regular} from './ui/Typography';
+import {Medium} from './ui/Typography';
 
 const Sticky = styled.div<{sticky: boolean; black?: boolean}>`
   position: ${p => (p.sticky ? 'fixed' : 'block')};
   width: 100%;
-  background-color: ${alpha(0.5, __COLORS.WHITE)};
   transition: background-color ease 0.3s;
   z-index: 100;
+  backdrop-filter: blur(4px);
+  background: ${alpha(0.1, __COLORS.PRIMARY)};
 `;
 
 const Wrapper = styled(Flex)`
   padding: ${SPACING * 2}px ${SPACING * 2}px;
   @media only screen and (min-width: ${LARGE_DEVICES_BREAK_POINT}px) {
-    padding: 10px 50px;
+    padding: 10px 32px;
     height: 75px;
   }
   max-width: 1440px;
@@ -45,9 +46,9 @@ const Header: React.FC<Props> = ({sticky, web3, black}) => {
           <Link href={'/learn'}>
             <a>
               <Flex>
-                <Regular block size={'xl'} center>
-                  Public Quizzes
-                </Regular>
+                <Medium block size={'l'} center color={__COLORS.PRIMARY}>
+                  Learn
+                </Medium>
               </Flex>
             </a>
           </Link>
@@ -57,9 +58,9 @@ const Header: React.FC<Props> = ({sticky, web3, black}) => {
               <Link href={'/' + account}>
                 <a>
                   <Flex>
-                    <Regular block size={'xl'} center>
+                    <Medium block size={'l'} center color={__COLORS.PRIMARY}>
                       My Quizzes
-                    </Regular>
+                    </Medium>
                   </Flex>
                 </a>
               </Link>
@@ -69,9 +70,9 @@ const Header: React.FC<Props> = ({sticky, web3, black}) => {
           <Link href={'/create'}>
             <a>
               <Flex>
-                <Regular block size={'xl'} center>
+                <Medium block size={'l'} center color={__COLORS.PRIMARY}>
                   Create Quiz
-                </Regular>
+                </Medium>
               </Flex>
             </a>
           </Link>

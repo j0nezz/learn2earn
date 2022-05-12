@@ -1,15 +1,35 @@
 import {collection, CollectionReference, getDocs} from '@firebase/firestore';
 import {useWeb3React} from '@web3-react/core';
-import {Flex} from 'axelra-styled-bootstrap-grid';
+import {
+  LARGE_DEVICES_BREAK_POINT,
+  SMALL_DEVICES_BREAK_POINT,
+  Spacer
+} from 'axelra-styled-bootstrap-grid';
 import {GetServerSideProps} from 'next';
 import React, {ReactElement} from 'react';
+import styled from 'styled-components';
 import QuizCard from '../../components/QuizCard';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold, Medium} from '../../components/ui/Typography';
+import {Bold} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
 import {db} from '../../lib/firebase';
+import {SPACING, __COLORS} from '../../theme/theme';
 import {Quiz} from '../../types/firestore-types';
 
+export const QuizesGrid = styled.div<{blur: boolean}>`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: ${SPACING}px;
+  @media only screen and (min-width: ${SMALL_DEVICES_BREAK_POINT}px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media only screen and (min-width: ${LARGE_DEVICES_BREAK_POINT}px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  filter: ${p => (p.blur ? 'blur(5px)' : 'none')};
+  pointer-events: ${p => (p.blur ? 'none' : 'default')};
+  transition: all ease-in-out 0.5s;
+`;
 type Props = {
   quizes: Quiz[];
 };
@@ -22,16 +42,17 @@ const Index = ({quizes}: Props) => {
       <Bold size={'xxxl'} gradient block>
         Learn
       </Bold>
-      {account ? (
-        <Medium>Hello {account}</Medium>
-      ) : (
-        <Medium>Use the connect Button in the Header</Medium>
+      {!account && (
+        <Bold size={'l'} color={__COLORS.CTA}>
+          Use the connect Button in the Header to see all quizes
+        </Bold>
       )}
-      <Flex row>
+      <Spacer x2 />
+      <QuizesGrid blur={!account}>
         {quizes.map(q => (
           <QuizCard key={q.quizId} quiz={q} />
         ))}
-      </Flex>
+      </QuizesGrid>
     </PageContainer>
   );
 };

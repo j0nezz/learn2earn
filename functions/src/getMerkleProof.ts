@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+import {db} from './config';
 import {distributorContract} from './contract';
 import {getFirestoreData} from './helpers/firestore';
 import {merkletreeUtils} from './helpers/merkletree-utils';
@@ -15,18 +16,32 @@ export const getMerkleProof = functions.https.onCall(
       data.quizId
     );
 
-    const correctAnswers = await getFirestoreData<{correctAnswer: number}[]>(
-      'solutions',
-      []
-    );
+    const solutionRes = await db.collection('solutions').doc(data.quizId).get();
 
-    functions.logger.log('These are the correct answers:', correctAnswers);
+    if (!solutionRes.exists) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Quiz has no solution'
+      );
+    }
+
+    const solutionDoc = solutionRes.data() as {
+      correctAnswer: number;
+    };
+
+    functions.logger.log('This is the correct solution', solutionDoc);
 
     const answers = await getFirestoreData<Answer[]>('answers', [
       {field: 'timestamp', operator: '<=', to: timestamp.toNumber()},
-      {field: 'answerId', operator: 'in', to: correctAnswers},
+      {
+        field: 'answer',
+        operator: '==',
+        to: solutionDoc.correctAnswer
+      },
       {field: 'quizId', operator: '==', to: data.quizId}
     ]);
+    functions.logger.log('These are the correct answers:', answers);
+
     const addresses = answers.map(a => a.address);
 
     const tree = merkletreeUtils.buildMerkleTree(addresses);

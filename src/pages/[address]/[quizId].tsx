@@ -1,6 +1,7 @@
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
 import {Spacer} from 'axelra-styled-bootstrap-grid';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import {BigNumber} from 'ethers';
 import {GetServerSideProps} from 'next';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
@@ -9,7 +10,7 @@ import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import {GetMerkleRootCallData} from '../../../functions/src/getMerkleRoot';
 import {Button} from '../../components/ui/Button';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold, Medium} from '../../components/ui/Typography';
+import {Bold, Light, Medium} from '../../components/ui/Typography';
 import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
@@ -36,7 +37,7 @@ const Index = ({quiz}: Props) => {
 
     if (timestamp.eq(0)) return;
 
-    setLastMerkleRoot(new Date(timestamp.mul(1000).toNumber()));
+    setLastMerkleRoot(new Date(timestamp.toNumber()));
   }, [distributor, quiz.quizId]);
 
   useEffect(() => {
@@ -46,15 +47,15 @@ const Index = ({quiz}: Props) => {
   const setMerkleRoot = useCallback(async () => {
     if (!distributor) return;
 
-    const newTimestamp = Date.now() / 1000;
+    const newTimestamp = Date.now();
 
     const res = await getMerkleRoot({
       quizId: quiz.quizId,
       timestamp: newTimestamp
     });
-    console.log('updating with root', res.data)
+    console.log('updating with root', res.data);
     const id = BigNumber.from(quiz.quizId);
-    console.log(id)
+    console.log(id);
     const tx = await distributor.updateMerkleRoot(id, res.data, newTimestamp);
     const txConfirmation = waitAndEvaluateTx(tx);
     await toast.promise(txConfirmation, {
@@ -83,11 +84,13 @@ const Index = ({quiz}: Props) => {
       <Medium size={'xl'} block>
         Merkleroot
       </Medium>
-      <Medium size={'l'} block>
+      <Light size={'l'} block>
         {lastMerkleRoot
-          ? `Last Update on Blockchain: ${lastMerkleRoot}`
+          ? `Last Update on Blockchain: ${formatDistanceToNow(
+              lastMerkleRoot
+            )} ago`
           : 'No Update on Blockchain found.'}
-      </Medium>
+      </Light>
       <Spacer x2 />
       <Button onClick={setMerkleRoot}>Update Merkleroot</Button>
     </PageContainer>

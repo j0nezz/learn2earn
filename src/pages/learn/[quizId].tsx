@@ -1,28 +1,22 @@
 import {Web3Provider} from '@ethersproject/providers';
-import {
-  collection,
-  doc,
-  DocumentReference,
-  getDoc,
-  getDocs,
-  query,
-  where
-} from '@firebase/firestore';
+import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
-import {Spacer} from 'axelra-styled-bootstrap-grid';
+import {MEDIUM_DEVICES_BREAK_POINT, Spacer} from 'axelra-styled-bootstrap-grid';
+import {shuffled} from 'ethers/lib/utils';
 import {GetServerSideProps} from 'next';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import styled from 'styled-components';
 import {AnswerQuizRequestType} from '../../../functions/src/answerQuiz';
+import {GetQuizAnswerRequest} from '../../../functions/src/getQuizAnswer';
 import QuizAnswers from '../../components/QuizAnswers';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Medium} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
 import {Answer, Quiz} from '../../types/firestore-types';
-import {shuffled} from "ethers/lib/utils";
 
 type Props = {
   quiz: Quiz;
@@ -33,7 +27,20 @@ const answerQuiz = httpsCallable<AnswerQuizRequestType>(
   'answerQuiz'
 );
 
+const getQuizAnswer = httpsCallable<GetQuizAnswerRequest, Answer | null>(
+  functions,
+  'getQuizAnswer'
+);
+
+const VideoWrapper = styled.div`
+  @media only screen and (min-width: ${MEDIUM_DEVICES_BREAK_POINT}px) {
+    max-width: min(70vw, 1000px);
+  }
+  margin: auto;
+`;
+
 const Index = ({quiz}: Props) => {
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState<number | null>(null);
   const {account, library} = useWeb3React();
@@ -43,7 +50,7 @@ const Index = ({quiz}: Props) => {
   const selectAnswer = useCallback(
     async (id: number) => {
       try {
-        if (!library || !account) return;
+        if (!library || !account || alreadyAnswered) return;
 
         setSelected(id);
         const signature = await (library as Web3Provider)
@@ -64,23 +71,23 @@ const Index = ({quiz}: Props) => {
         console.log(e);
       }
     },
-    [account, library, quiz.quizId]
+    [account, alreadyAnswered, library, quiz.quizId]
   );
 
   const fetchAnswer = useCallback(async () => {
     try {
-      const q = query(
-        collection(db, 'answers'),
-        where('address', '==', account),
-        where('quizId', '==', quiz.quizId)
-      );
-      // @ts-ignore
-      const d = await getDocs<Answer>(q);
-      console.log(
-        'answers',
-        d.docs.map(d => d.data())
-      );
-    } catch (e) {}
+      if (!account) return;
+      const answer = await getQuizAnswer({
+        quizId: quiz.quizId,
+        address: account
+      });
+      if (answer) {
+        setAlreadyAnswered(true);
+        setConfirmed(answer.data?.answer || null);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }, [account, quiz.quizId]);
 
   useEffect(() => {
@@ -94,7 +101,12 @@ const Index = ({quiz}: Props) => {
       <Bold size={'xxxl'} gradient block>
         Earn {quiz.tokenName}
       </Bold>
-      <LiteYouTubeEmbed id={quiz.youtubeId} title={'Earn ' + quiz.tokenName} />
+      <VideoWrapper>
+        <LiteYouTubeEmbed
+          id={quiz.youtubeId}
+          title={'Earn ' + quiz.tokenName}
+        />
+      </VideoWrapper>
       <Spacer x2 />
 
       <Medium size={'xl'} block>

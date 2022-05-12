@@ -1,11 +1,12 @@
 import {Web3Provider} from '@ethersproject/providers';
 import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
-import {Flex} from 'axelra-styled-bootstrap-grid';
+import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
 import {BigNumber, ethers} from 'ethers';
 import Router from 'next/router';
 import React, {ReactElement, useCallback, useMemo, useState} from 'react';
 import {toast} from 'react-hot-toast';
+import styled from 'styled-components';
 import {FillQuizRequestType} from '../../functions/src/fillQuiz';
 import {Button} from '../components/ui/Button';
 import {Input} from '../components/ui/Input';
@@ -16,6 +17,7 @@ import {getRandomBigNumber} from '../helpers/getRandomBigNumber';
 import {waitAndEvaluateTx} from '../helpers/waitAndEvaluateTx';
 import Web3Layout from '../layouts/web3.layout';
 import {functions} from '../lib/firebase';
+import {__COLORS} from '../theme/theme';
 import {QuestionAnswer} from '../types/firestore-types';
 
 type Props = {};
@@ -24,6 +26,12 @@ const fillQuizCallable = httpsCallable<FillQuizRequestType>(
   functions,
   'fillQuiz'
 );
+
+const AddMore = styled(Bold)`
+  &:hover {
+    cursor: pointer;
+  }
+`;
 
 const Create = (props: Props) => {
   const {account, library} = useWeb3React<Web3Provider>();
@@ -161,7 +169,7 @@ const Create = (props: Props) => {
             }
             type={'text'}
           />
-          <div onClick={addMoreAnswers}>Add more answers</div>
+
           {wrongAnswers.map((a, i) => (
             <Input
               key={String(i)}
@@ -172,6 +180,15 @@ const Create = (props: Props) => {
               type={'text'}
             />
           ))}
+          <AddMore
+            size={'m'}
+            color={__COLORS.PRIMARY}
+            onClick={addMoreAnswers}
+            block
+          >
+            + Add more answers
+          </AddMore>
+          <Spacer x4 />
           <Button type={'submit'}>Update Quiz Data</Button>
         </form>
       </Flex>

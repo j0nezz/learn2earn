@@ -56,8 +56,6 @@ export const fillQuiz = functions.https.onCall(
       const tokenContract = Erc20__factory.connect(token, provider);
       const tokenName = await tokenContract.symbol();
 
-      functions.logger.log("Hello from info. Here's an object:", tokenName);
-
       if (quizOwner !== ownerAddress) {
         throw new functions.https.HttpsError(
           'permission-denied',

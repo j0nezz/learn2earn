@@ -9,6 +9,9 @@ const Answer = styled.div<{selected?: boolean}>`
   margin-bottom: 2rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background: ${p => (p.selected ? __COLORS.PRIMARY : __COLORS.WHITE)};
+  span {
+    color: ${p => (p.selected ? __COLORS.WHITE : __COLORS.PRIMARY)};
+  }
   &:hover {
     cursor: pointer;
     transform: translateY(-2px);

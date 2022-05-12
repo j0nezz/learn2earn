@@ -2,7 +2,7 @@ export type Answer = {
   quizId: number;
   address: string;
   timestamp: number;
-  answerId: number;
+  answer: number;
 };
 
 export type Quiz = {
