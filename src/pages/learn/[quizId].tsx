@@ -22,6 +22,7 @@ import {Bold, Medium} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
 import {Answer, Quiz} from '../../types/firestore-types';
+import {shuffled} from "ethers/lib/utils";
 
 type Props = {
   quiz: Quiz;
@@ -136,9 +137,18 @@ export const getServerSideProps: GetServerSideProps<
   // TODO get Answer of user
 
   const data = docSnap.data();
+  if (!quizId || !data) {
+    return {
+      redirect: {
+        destination: '/learn',
+        permanent: false
+      }
+    };
+  }
+
   return {
     props: {
-      quiz: data
+      quiz: {...data, answers: shuffled(data.answers)} as Quiz
     }
   };
 };

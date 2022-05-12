@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import {distributorContract} from './contract';
 import {getFirestoreData} from './helpers/firestore';
 import {merkletreeUtils} from './helpers/merkletree-utils';
-import {Answer, Quiz} from './types/firestore-types';
+import {Answer} from './types/firestore-types';
 
 export type GetMerkleProofCallData = {
   quizId: string;
@@ -15,13 +15,17 @@ export const getMerkleProof = functions.https.onCall(
       data.quizId
     );
 
-    const quizzes = await getFirestoreData<Quiz[]>('quiz', [
-      {field: 'quizId', operator: '==', to: data.quizId}
-    ]);
-    const correctAnswers = quizzes.map(q => q.correctAnswer);
+    const correctAnswers = await getFirestoreData<{correctAnswer: number}[]>(
+      'solutions',
+      []
+    );
+
+    functions.logger.log('These are the correct answers:', correctAnswers);
+
     const answers = await getFirestoreData<Answer[]>('answers', [
       {field: 'timestamp', operator: '<=', to: timestamp.toNumber()},
-      {field: 'answerId', operator: 'in', to: correctAnswers}
+      {field: 'answerId', operator: 'in', to: correctAnswers},
+      {field: 'quizId', operator: '==', to: data.quizId}
     ]);
     const addresses = answers.map(a => a.address);
 

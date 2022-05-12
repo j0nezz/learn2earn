@@ -10,7 +10,6 @@ export type Quiz = {
   youtubeId: string;
   question: string;
   answers: QuestionAnswer[];
-  correctAnswer: number;
   tokenName: string;
   reward: string;
   ownerAddress: string;

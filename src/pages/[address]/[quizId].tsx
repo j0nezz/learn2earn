@@ -52,7 +52,9 @@ const Index = ({quiz}: Props) => {
       quizId: quiz.quizId,
       timestamp: newTimestamp
     });
+    console.log('updating with root', res.data)
     const id = BigNumber.from(quiz.quizId);
+    console.log(id)
     const tx = await distributor.updateMerkleRoot(id, res.data, newTimestamp);
     const txConfirmation = waitAndEvaluateTx(tx);
     await toast.promise(txConfirmation, {

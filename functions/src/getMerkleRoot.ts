@@ -1,31 +1,38 @@
 import * as functions from 'firebase-functions';
-import {distributorContract} from './contract';
 import {getFirestoreData} from './helpers/firestore';
 import {merkletreeUtils} from './helpers/merkletree-utils';
-import {Answer, Quiz} from './types/firestore-types';
+import {Answer} from './types/firestore-types';
 
-type GetMerkleRootCallData = {
-  quizId: number;
-  address: string;
+export type GetMerkleRootCallData = {
+  quizId: string;
+  timestamp: number;
 };
 
 export const getMerkleRoot = functions.https.onCall(
   async (data: GetMerkleRootCallData, context) => {
-    const timestamp = await distributorContract.getMerkleRootTimestamp(
-      data.quizId
+    const correctAnswers = await getFirestoreData<{correctAnswer: number}[]>(
+      'solutions',
+      []
     );
 
-    const quizzes = await getFirestoreData<Quiz[]>('quiz', [
+    functions.logger.log('These are the correct answers:', correctAnswers);
+
+    const answers = await getFirestoreData<Answer[]>('answers', [
+      {field: 'timestamp', operator: '<=', to: data.timestamp},
+      {
+        field: 'answerId',
+        operator: 'in',
+        to: correctAnswers.map(a => a.correctAnswer)
+      },
       {field: 'quizId', operator: '==', to: data.quizId}
     ]);
-    const correctAnswers = quizzes.map(q => q.correctAnswer);
-    const answers = await getFirestoreData<Answer[]>('answers', [
-      {field: 'timestamp', operator: '<=', to: timestamp.toNumber()},
-      {field: 'answerId', operator: 'in', to: correctAnswers}
-    ]);
+
+
     const addresses = answers.map(a => a.address);
 
     const tree = merkletreeUtils.buildMerkleTree(addresses);
+
+    functions.logger.log('These is the root:', merkletreeUtils.getMerkleRoot(tree));
     return merkletreeUtils.getMerkleRoot(tree);
   }
 );
