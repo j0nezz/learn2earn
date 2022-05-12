@@ -4,13 +4,13 @@ import {getFirestoreData} from './helpers/firestore';
 import {merkletreeUtils} from './helpers/merkletree-utils';
 import {Answer, Quiz} from './types/firestore-types';
 
-export type GetMerkleRootCallData = {
-  quizId: number;
+export type GetMerkleProofCallData = {
+  quizId: string;
   address: string;
 };
 
 export const getMerkleProof = functions.https.onCall(
-  async (data: GetMerkleRootCallData, context) => {
+  async (data: GetMerkleProofCallData, context) => {
     const timestamp = await distributorContract.getMerkleRootTimestamp(
       data.quizId
     );

@@ -1,43 +1,66 @@
-import {Web3Provider} from '@ethersproject/providers';
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
-import {useWeb3React} from '@web3-react/core';
+import {httpsCallable} from '@firebase/functions';
 import {Spacer} from 'axelra-styled-bootstrap-grid';
+import {BigNumber} from 'ethers';
 import {GetServerSideProps} from 'next';
-import React, {ReactElement, useCallback, useState} from 'react';
+import React, {ReactElement, useCallback, useEffect, useState} from 'react';
+import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import QuizAnswers from '../../components/QuizAnswers';
+import {GetMerkleRootCallData} from '../../../functions/src/getMerkleRoot';
+import {Button} from '../../components/ui/Button';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Medium} from '../../components/ui/Typography';
+import {useQuizDistributor} from '../../contracts/addresses';
+import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
-import {db} from '../../lib/firebase';
+import {db, functions} from '../../lib/firebase';
 import {Quiz} from '../../types/firestore-types';
 
 type Props = {
   quiz: Quiz;
 };
 
+const getMerkleRoot = httpsCallable<GetMerkleRootCallData, string>(
+  functions,
+  'getMerkleRoot'
+);
+
 const Index = ({quiz}: Props) => {
-  const [selected, setSelected] = useState<number | null>(null);
-  const [confirmed, setConfirmed] = useState<number | null>(null);
-  const {account, library} = useWeb3React();
+  const distributor = useQuizDistributor();
+  const [lastMerkleRoot, setLastMerkleRoot] = useState<null | Date>(null);
 
-  const selectAnswer = useCallback(
-    async (id: number) => {
-      if (!library || !account) return;
+  const getLastMerkleRoot = useCallback(async () => {
+    if (!distributor) return;
 
-      setSelected(id);
-      const sign = await (library as Web3Provider)
-        .getSigner(account)
-        .signMessage(id.toString());
+    const timestamp = await distributor.getMerkleRootTimestamp(quiz.quizId);
 
-      console.log(sign);
+    if (timestamp.eq(0)) return;
 
-      // TODO: callBackend({answer: id, quizId, signature})
+    setLastMerkleRoot(new Date(timestamp.mul(1000).toNumber()));
+  }, [distributor, quiz.quizId]);
 
-      setConfirmed(id);
-    },
-    [account, library]
-  );
+  useEffect(() => {
+    getLastMerkleRoot();
+  }, [getLastMerkleRoot]);
+
+  const setMerkleRoot = useCallback(async () => {
+    if (!distributor) return;
+
+    const newTimestamp = Date.now() / 1000;
+
+    const res = await getMerkleRoot({
+      quizId: quiz.quizId,
+      timestamp: newTimestamp
+    });
+    const id = BigNumber.from(quiz.quizId);
+    const tx = await distributor.updateMerkleRoot(id, res.data, newTimestamp);
+    const txConfirmation = waitAndEvaluateTx(tx);
+    await toast.promise(txConfirmation, {
+      loading: 'Waiting for confirmation',
+      success: 'Merkleroot successfully updated',
+      error: 'Error updating merkleroot'
+    });
+  }, [distributor, quiz.quizId]);
 
   return (
     <PageContainer>
@@ -49,13 +72,22 @@ const Index = ({quiz}: Props) => {
       <Medium size={'xl'} block>
         {quiz.question}
       </Medium>
+      {quiz.answers.map(a => (
+        <Medium key={a.id} size={'l'} block>
+          {a.label}
+        </Medium>
+      ))}
       <Spacer x2 />
-      <QuizAnswers
-        answers={quiz.answers}
-        selected={selected}
-        confirmed={confirmed}
-        onSelect={selectAnswer}
-      />
+      <Medium size={'xl'} block>
+        Merkleroot
+      </Medium>
+      <Medium size={'l'} block>
+        {lastMerkleRoot
+          ? `Last Update on Blockchain: ${lastMerkleRoot}`
+          : 'No Update on Blockchain found.'}
+      </Medium>
+      <Spacer x2 />
+      <Button onClick={setMerkleRoot}>Update Merkleroot</Button>
     </PageContainer>
   );
 };
@@ -66,12 +98,13 @@ Index.getLayout = function getLayout(page: ReactElement) {
 
 export const getServerSideProps: GetServerSideProps<
   any,
-  {quizId: string},
+  {address: string; quizId: string},
   any
 > = async ({params}) => {
   const quizId = params?.quizId;
+  const address = params?.address;
 
-  if (!quizId) {
+  if (!quizId || !address) {
     return {
       redirect: {
         destination: '/learn',
@@ -82,10 +115,17 @@ export const getServerSideProps: GetServerSideProps<
 
   const ref = doc(db, 'quiz', quizId) as DocumentReference<Quiz>;
   const docSnap = await getDoc<Quiz>(ref);
-
-  // TODO get Answer of user
-
   const data = docSnap.data();
+
+  if (!data || data.ownerAddress !== address) {
+    return {
+      redirect: {
+        destination: '/learn',
+        permanent: false
+      }
+    };
+  }
+
   return {
     props: {
       quiz: data

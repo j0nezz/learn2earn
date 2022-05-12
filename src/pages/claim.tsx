@@ -2,7 +2,7 @@ import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import {toast} from 'react-hot-toast';
-import {GetMerkleRootCallData} from '../../functions/src/getMerkleProof';
+import {GetMerkleProofCallData} from '../../functions/src/getMerkleProof';
 import {Button} from '../components/ui/Button';
 import {PageContainer} from '../components/ui/PageContainer';
 import {Bold, Medium} from '../components/ui/Typography';
@@ -13,10 +13,10 @@ import Web3Layout from '../layouts/web3.layout';
 import {functions} from '../lib/firebase';
 
 type Props = {
-  quizId: number;
+  quizId: string;
 };
 
-const getMerkleProof = httpsCallable<GetMerkleRootCallData, string[]>(
+const getMerkleProof = httpsCallable<GetMerkleProofCallData, string[]>(
   functions,
   'getMerkleProof'
 );

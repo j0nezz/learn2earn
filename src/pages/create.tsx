@@ -3,6 +3,7 @@ import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
 import {Flex} from 'axelra-styled-bootstrap-grid';
 import {BigNumber, ethers} from 'ethers';
+import Router from 'next/router';
 import React, {ReactElement, useCallback, useMemo, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import {FillQuizRequestType} from '../../functions/src/fillQuiz';
@@ -81,18 +82,20 @@ const Create = (props: Props) => {
           quizId,
           answers: [correctAnswer, ...wrongAnswers],
           correctAnswer: correctAnswer.id,
-          youtubeId: 'asdf',
+          youtubeId,
           question,
           ownerAddress: account,
 
           signature: await library.getSigner(account).signMessage(account)
         });
         console.log('RESULT', res.data);
+
+        await Router.push(`/${account}/${quizId}`);
       } catch (e) {
         console.log(e);
       }
     },
-    [account, library, question, quizId]
+    [account, correctAnswer, library, question, quizId, wrongAnswers, youtubeId]
   );
 
   const CreateQuizForm = useMemo(
