@@ -76,7 +76,7 @@ export const fillQuiz = functions.https.onCall(
         quizId
       });
 
-      await db.collection('answers').doc(quizId).set({correctAnswer});
+      await db.collection('solutions').doc(quizId).set({correctAnswer});
 
       return {youtubeId, question: question, answers, quizId};
     } catch (e) {
