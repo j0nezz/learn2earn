@@ -1,7 +1,7 @@
 import {initializeApp} from '@firebase/app';
 import {indexedDBLocalPersistence, initializeAuth} from '@firebase/auth';
 import {getFirestore} from '@firebase/firestore';
-import {connectFunctionsEmulator, getFunctions} from '@firebase/functions';
+import {getFunctions} from '@firebase/functions';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
@@ -26,6 +26,7 @@ export const db = getFirestore();
 
 export const functions = getFunctions(app);
 
+/*
 const EMULATORS_STARTED = 'EMULATORS_STARTED';
 function startEmulators() {
   // @ts-ignore
@@ -40,3 +41,4 @@ function startEmulators() {
 if (process.env.NODE_ENV === 'development') {
   startEmulators();
 }
+*/

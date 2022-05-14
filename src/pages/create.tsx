@@ -4,7 +4,13 @@ import {useWeb3React} from '@web3-react/core';
 import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
 import {BigNumber, ethers} from 'ethers';
 import Router from 'next/router';
-import React, {ReactElement, useCallback, useMemo, useState} from 'react';
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import {toast} from 'react-hot-toast';
 import styled from 'styled-components';
 import {FillQuizRequestType} from '../../functions/src/fillQuiz';
@@ -12,9 +18,13 @@ import {Button} from '../components/ui/Button';
 import {Input} from '../components/ui/Input';
 import {PageContainer} from '../components/ui/PageContainer';
 import {Bold, Medium} from '../components/ui/Typography';
-import {useQuizDistributor} from '../contracts/addresses';
+import {DISTRIBUTOR_CONTRACT, useQuizDistributor} from '../contracts/addresses';
+import {SupportedChainId} from '../contracts/chains';
+import ERC20ABI from '../contracts/erc20.json';
+import {Erc20} from '../contracts/types';
 import {getRandomBigNumber} from '../helpers/getRandomBigNumber';
 import {waitAndEvaluateTx} from '../helpers/waitAndEvaluateTx';
+import {getContract} from '../hooks/useContract';
 import Web3Layout from '../layouts/web3.layout';
 import {functions} from '../lib/firebase';
 import {__COLORS} from '../theme/theme';
@@ -37,6 +47,7 @@ const Create = (props: Props) => {
   const {account, library} = useWeb3React<Web3Provider>();
   const distributor = useQuizDistributor();
 
+  const [allowance, setAllowance] = useState<BigNumber | null>(null);
   const [token, setToken] = useState('');
   const [reward, setReward] = useState('');
   const [quizId, setQuizId] = useState('');
@@ -81,6 +92,34 @@ const Create = (props: Props) => {
     [account, distributor, reward, token]
   );
 
+  const approve = useCallback(
+    async e => {
+      try {
+        e.preventDefault();
+        if (!quizId || !token || !account || !distributor || !library) return;
+
+        const erc20 = getContract(token, ERC20ABI, library, account) as Erc20;
+        const tx = await erc20.approve(
+          DISTRIBUTOR_CONTRACT[SupportedChainId.ROPSTEN],
+          ethers.constants.MaxUint256
+        );
+
+        const promise = waitAndEvaluateTx(tx);
+
+        await toast.promise(promise, {
+          loading: 'Waiting for tx confirmation',
+          error: 'Could not approve token',
+          success: 'Successfully approved token'
+        });
+
+        setAllowance(ethers.constants.MaxUint256);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    [account, distributor, library, quizId, token]
+  );
+
   const fillQuizData = useCallback(
     async e => {
       e.preventDefault();
@@ -105,6 +144,29 @@ const Create = (props: Props) => {
     },
     [account, correctAnswer, library, question, quizId, wrongAnswers, youtubeId]
   );
+
+  const getAllowance = useCallback(async () => {
+    try {
+      if (!quizId || !token || !account || !distributor || !library) return;
+
+      const erc20 = getContract(token, ERC20ABI, library, account) as Erc20;
+
+      const allowance = await erc20.allowance(
+        account,
+        DISTRIBUTOR_CONTRACT[SupportedChainId.ROPSTEN]
+      );
+
+      setAllowance(allowance);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [account, distributor, library, quizId, token]);
+
+  useEffect(() => {
+    if (quizId && !allowance) {
+      getAllowance();
+    }
+  }, [allowance, getAllowance, quizId]);
 
   const CreateQuizForm = useMemo(
     () => (
@@ -205,6 +267,18 @@ const Create = (props: Props) => {
     ]
   );
 
+  const Approve = useMemo(
+    () => (
+      <Flex column>
+        <Medium>Approve your Token</Medium>
+        <form onSubmit={approve}>
+          <Button type={'submit'}>Approve</Button>
+        </form>
+      </Flex>
+    ),
+    [approve]
+  );
+
   return (
     <PageContainer>
       <Bold size={'xxxl'} gradient block>
@@ -212,7 +286,7 @@ const Create = (props: Props) => {
       </Bold>
       {!account && <Medium block>Connect an account to create a Quiz</Medium>}
 
-      {quizId ? FillQuizForm : CreateQuizForm}
+      {quizId ? (allowance ? FillQuizForm : Approve) : CreateQuizForm}
     </PageContainer>
   );
 };

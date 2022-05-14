@@ -4,7 +4,8 @@ import styled from 'styled-components';
 // Used to stick footer always to bottom
 
 export const FullHeightWrapper = styled.div`
-  height: 100%;
+  flex: 1;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

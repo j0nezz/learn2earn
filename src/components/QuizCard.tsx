@@ -4,11 +4,12 @@ import {ethers} from 'ethers';
 import Link from 'next/link';
 import React from 'react';
 import styled from 'styled-components';
+import {__COLORS} from '../theme/theme';
 import {Quiz} from '../types/firestore-types';
 import {Bold, Regular} from './ui/Typography';
 
-const Wrapper = styled.div`
-  background: white;
+const Wrapper = styled.div<{background?: string}>`
+  background: ${p => p.background ?? __COLORS.WHITE};
   padding: 2rem;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
   height: 100%;
@@ -20,8 +21,11 @@ const Wrapper = styled.div`
 `;
 type Props = {
   quiz: Quiz;
+  answered: boolean;
+  correct: boolean;
+  claimable: boolean;
 };
-const QuizCard: React.FC<Props> = ({quiz}) => {
+const QuizCard: React.FC<Props> = ({quiz, answered, correct, claimable}) => {
   const {account} = useWeb3React();
 
   return (
@@ -32,12 +36,27 @@ const QuizCard: React.FC<Props> = ({quiz}) => {
       }
     >
       <a>
-        <Wrapper>
+        <Wrapper
+          background={
+            answered
+              ? correct
+                ? claimable
+                  ? 'green'
+                  : 'lightgreen'
+                : 'red'
+              : __COLORS.WHITE
+          }
+        >
+          {answered && correct && claimable && (
+            <Bold center block>
+              Claim Reward now!
+            </Bold>
+          )}
           <Bold block size={'xl'} center>
             {quiz.tokenName}
           </Bold>
           <Spacer x2 />
-          <Regular>
+          <Regular block center>
             Reward: {ethers.utils.formatUnits(quiz.reward)} {quiz.tokenName}
           </Regular>
         </Wrapper>

@@ -8,3 +8,4 @@ typings/
 # Node.js dependency directory
 node_modules/
 src/contracts/types
+.runtimeconfig.json

@@ -12,8 +12,6 @@ export const answerQuiz = functions.https.onCall(
   async (request: AnswerQuizRequestType, response) => {
     const {quizId, answer, signature} = request;
 
-    // TODO make sure the QuizId doesn't exist
-
     try {
       const address = ethers.utils.verifyMessage(answer.toString(), signature);
 
@@ -24,7 +22,14 @@ export const answerQuiz = functions.https.onCall(
         answer
       });
 
-      return {quizId, address, timestamp: Date.now(), answer};
+      const res1 = await db.collection('solutions').doc(quizId).get();
+      if (!res1.exists) {
+        functions.logger.log('Quiz Answer does not exist', res1);
+        return null;
+      }
+      const solution = res1.data();
+
+      return solution?.correctAnswer === answer;
     } catch (e) {
       functions.logger.log('Error', e);
       throw new functions.https.HttpsError('internal', 'Internal Server Error');

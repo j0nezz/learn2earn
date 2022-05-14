@@ -1,4 +1,5 @@
 import {collection, CollectionReference, getDocs} from '@firebase/firestore';
+import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
 import {
   LARGE_DEVICES_BREAK_POINT,
@@ -6,13 +7,17 @@ import {
   Spacer
 } from 'axelra-styled-bootstrap-grid';
 import {GetServerSideProps} from 'next';
-import React, {ReactElement} from 'react';
+import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import styled from 'styled-components';
+import {
+  GetQuizEvaluationRequest,
+  QuizEvaluationResponse
+} from '../../../functions/src/getQuizEvaluation';
 import QuizCard from '../../components/QuizCard';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold} from '../../components/ui/Typography';
+import {Bold, Medium} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
-import {db} from '../../lib/firebase';
+import {db, functions} from '../../lib/firebase';
 import {SPACING, __COLORS} from '../../theme/theme';
 import {Quiz} from '../../types/firestore-types';
 
@@ -34,8 +39,35 @@ type Props = {
   quizes: Quiz[];
 };
 
+const getAnsweredQuizes = httpsCallable<
+  GetQuizEvaluationRequest,
+  QuizEvaluationResponse
+>(functions, 'getQuizEvaluation');
+
 const Index = ({quizes}: Props) => {
   const {account} = useWeb3React();
+  const [answeredQuizes, setAnsweredQuizes] = useState<QuizEvaluationResponse>(
+    {}
+  );
+
+  const getEvaluatedQuizes = useCallback(async () => {
+    try {
+      if (!account) return;
+
+      const res = await getAnsweredQuizes({address: account});
+      setAnsweredQuizes(res.data);
+
+      console.log('Answered QUIZES', res.data);
+    } catch (e) {
+      console.log(e);
+    }
+  }, [account]);
+
+  useEffect(() => {
+    if (account) {
+      getEvaluatedQuizes();
+    }
+  }, [account, getEvaluatedQuizes]);
 
   return (
     <PageContainer>
@@ -48,9 +80,16 @@ const Index = ({quizes}: Props) => {
         </Bold>
       )}
       <Spacer x2 />
+      <Medium>Claimable Quizes</Medium>
       <QuizesGrid blur={!account}>
         {quizes.map(q => (
-          <QuizCard key={q.quizId} quiz={q} />
+          <QuizCard
+            key={q.quizId}
+            quiz={q}
+            answered={Boolean(answeredQuizes[q.quizId])}
+            correct={answeredQuizes[q.quizId]?.correct}
+            claimable={answeredQuizes[q.quizId]?.claimable}
+          />
         ))}
       </QuizesGrid>
     </PageContainer>
