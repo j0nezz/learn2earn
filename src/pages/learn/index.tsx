@@ -9,16 +9,16 @@ import {
 import {GetServerSideProps} from 'next';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import styled from 'styled-components';
-import {
-  GetQuizEvaluationRequest,
-  QuizEvaluationResponse
-} from '../../../functions/src/getQuizEvaluation';
 import QuizCard from '../../components/QuizCard';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Medium} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
 import {SPACING, __COLORS} from '../../theme/theme';
+import {
+  GetQuizEvaluationRequest,
+  QuizEvaluationResponse
+} from '../../types/firebase-function-types';
 import {Quiz} from '../../types/firestore-types';
 
 export const QuizesGrid = styled.div<{blur: boolean}>`

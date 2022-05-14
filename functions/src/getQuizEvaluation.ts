@@ -3,18 +3,18 @@ import * as functions from 'firebase-functions';
 import {db} from './config';
 import {distributorContract} from './contract';
 
-export type GetQuizEvaluationRequest = {
+type GetQuizEvaluationRequest = {
   address: string;
 };
 
-export type QuizEvaluation = {
+type QuizEvaluation = {
   quizId: string;
   correct: boolean;
   claimed: boolean;
   claimable: boolean;
 };
 
-export type QuizEvaluationResponse = {[id: string]: QuizEvaluation};
+type QuizEvaluationResponse = {[id: string]: QuizEvaluation};
 
 export const getQuizEvaluation = functions.https.onCall(
   async (data: GetQuizEvaluationRequest, context) => {

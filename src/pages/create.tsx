@@ -13,7 +13,6 @@ import React, {
 } from 'react';
 import {toast} from 'react-hot-toast';
 import styled from 'styled-components';
-import {FillQuizRequestType} from '../../functions/src/fillQuiz';
 import {Button} from '../components/ui/Button';
 import {Input} from '../components/ui/Input';
 import {PageContainer} from '../components/ui/PageContainer';
@@ -28,6 +27,7 @@ import {getContract} from '../hooks/useContract';
 import Web3Layout from '../layouts/web3.layout';
 import {functions} from '../lib/firebase';
 import {__COLORS} from '../theme/theme';
+import {FillQuizRequestType} from '../types/firebase-function-types';
 import {QuestionAnswer} from '../types/firestore-types';
 
 type Props = {};

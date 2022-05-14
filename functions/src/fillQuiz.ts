@@ -5,7 +5,7 @@ import {distributorContract, provider} from './contract';
 import {Erc20__factory} from './contracts/types';
 import {QuestionAnswer} from './types/firestore-types';
 
-export type FillQuizRequestType = {
+type FillQuizRequestType = {
   quizId: string;
   youtubeId: string;
   question: string;

@@ -3,7 +3,7 @@ import * as functions from 'firebase-functions';
 import {db} from './config';
 import {distributorContract} from './contract';
 
-export type GetQuizAnswerRequest = {
+type GetQuizAnswerRequest = {
   quizId: string;
   address: string;
 };

@@ -10,9 +10,6 @@ import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import {usePrevious} from 'react-use';
 import styled from 'styled-components';
-import {AnswerQuizRequestType} from '../../../functions/src/answerQuiz';
-import {GetMerkleProofCallData} from '../../../functions/src/getMerkleProof';
-import {GetQuizAnswerRequest} from '../../../functions/src/getQuizAnswer';
 import QuizAnswers from '../../components/QuizAnswers';
 import {Button} from '../../components/ui/Button';
 import {PageContainer} from '../../components/ui/PageContainer';
@@ -21,6 +18,11 @@ import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
+import {
+  AnswerQuizRequestType,
+  GetMerkleProofCallData,
+  GetQuizAnswerRequest
+} from '../../types/firebase-function-types';
 import {Answer, Quiz} from '../../types/firestore-types';
 
 type Props = {

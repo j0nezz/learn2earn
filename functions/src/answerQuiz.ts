@@ -2,7 +2,7 @@ import {ethers} from 'ethers';
 import * as functions from 'firebase-functions';
 import {db} from './config';
 
-export type AnswerQuizRequestType = {
+type AnswerQuizRequestType = {
   quizId: string;
   answer: number;
   signature: string;

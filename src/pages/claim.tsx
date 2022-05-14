@@ -2,7 +2,6 @@ import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import {toast} from 'react-hot-toast';
-import {GetMerkleProofCallData} from '../../functions/src/getMerkleProof';
 import {Button} from '../components/ui/Button';
 import {PageContainer} from '../components/ui/PageContainer';
 import {Bold, Medium} from '../components/ui/Typography';
@@ -11,6 +10,7 @@ import {QuizDistributor} from '../contracts/types';
 import {waitAndEvaluateTx} from '../helpers/waitAndEvaluateTx';
 import Web3Layout from '../layouts/web3.layout';
 import {functions} from '../lib/firebase';
+import {GetMerkleProofCallData} from '../types/firebase-function-types';
 
 type Props = {
   quizId: string;

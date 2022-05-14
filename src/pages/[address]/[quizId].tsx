@@ -7,7 +7,6 @@ import {GetServerSideProps} from 'next';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
-import {GetMerkleRootCallData} from '../../../functions/src/getMerkleRoot';
 import {Button} from '../../components/ui/Button';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Light, Medium} from '../../components/ui/Typography';
@@ -15,6 +14,7 @@ import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
+import {GetMerkleRootCallData} from '../../types/firebase-function-types';
 import {Quiz} from '../../types/firestore-types';
 
 type Props = {
