@@ -80,7 +80,6 @@ const Index = ({quizes}: Props) => {
         </Bold>
       )}
       <Spacer x2 />
-      <Medium>Claimable Quizes</Medium>
       <QuizesGrid blur={!account}>
         {quizes.map(q => (
           <QuizCard
