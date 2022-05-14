@@ -1,4 +1,4 @@
-import {QuestionAnswer} from '../../functions/src/types/firestore-types';
+import {QuestionAnswer} from '../../../functions/src/types/firestore-types';
 
 export type GetQuizEvaluationRequest = {
   address: string;
