@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "yarn typechain && next dev",
-    "build": "next build",
+    "build": "yarn typechain && next build",
     "start": "next start",
     "test": "next lint",
     "typechain": "typechain --target ethers-v5 --out-dir src/contracts/types './src/contracts/**/*.json'"
