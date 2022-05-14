@@ -29,7 +29,13 @@ const Index = ({quizzes}: Props) => {
       <Spacer x2 />
       <QuizesGrid blur={false}>
         {quizzes.map(q => (
-          <QuizCard key={q.quizId} quiz={q} />
+          <QuizCard
+            key={q.quizId}
+            quiz={q}
+            correct={false}
+            answered={false}
+            claimable={false}
+          />
         ))}
       </QuizesGrid>
     </PageContainer>
