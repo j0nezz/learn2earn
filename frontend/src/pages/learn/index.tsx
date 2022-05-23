@@ -76,7 +76,7 @@ const Index = ({quizes}: Props) => {
       </Bold>
       {!account && (
         <Bold size={'l'} color={__COLORS.CTA}>
-          Use the connect Button in the Header to see all quizes
+          Use the connect Button in the Header to see all Quizzes
         </Bold>
       )}
       <Spacer x2 />

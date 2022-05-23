@@ -43,6 +43,12 @@ const AddMore = styled(Bold)`
   }
 `;
 
+const BlurFlex = styled(Flex)<{blur: boolean}>`
+  filter: ${p => (p.blur ? 'blur(5px)' : 'none')};
+  pointer-events: ${p => (p.blur ? 'none' : 'default')};
+  transition: all ease-in-out 0.5s;
+`;
+
 const Create = (props: Props) => {
   const {account, library} = useWeb3React<Web3Provider>();
   const distributor = useQuizDistributor();
@@ -207,6 +213,7 @@ const Create = (props: Props) => {
     () => (
       <Flex column>
         <Medium>Fill Data for Quiz ID: {quizId}</Medium>
+        <Spacer x2/>
         <form onSubmit={fillQuizData}>
           <Input
             value={youtubeId}
@@ -284,9 +291,15 @@ const Create = (props: Props) => {
       <Bold size={'xxxl'} gradient block>
         Create Quiz
       </Bold>
-      {!account && <Medium block>Connect an account to create a Quiz</Medium>}
+      {!account && (
+        <Bold size={'l'} color={__COLORS.CTA}>
+          Use the connect Button in the Header to create a Quiz
+        </Bold>
+      )}
 
-      {quizId ? (allowance ? FillQuizForm : Approve) : CreateQuizForm}
+      <BlurFlex blur={!account}>
+        {quizId ? (allowance ? FillQuizForm : Approve) : CreateQuizForm}
+      </BlurFlex>
     </PageContainer>
   );
 };

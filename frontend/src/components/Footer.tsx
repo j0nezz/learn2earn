@@ -1,3 +1,4 @@
+import { Flex } from 'axelra-styled-bootstrap-grid';
 import {transparentize} from 'polished';
 import React from 'react';
 import styled from 'styled-components';
@@ -20,7 +21,7 @@ const Footer = () => {
   return (
     <Background>
       <PageContainer>
-        <div>Blablabla</div>
+        <Flex>developed with ♥️ at UZH</Flex>
       </PageContainer>
     </Background>
   );

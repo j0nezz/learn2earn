@@ -4,8 +4,10 @@ import {ethers} from 'ethers';
 import Link from 'next/link';
 import React from 'react';
 import styled from 'styled-components';
-import {__COLORS} from '../theme/theme';
+import {alpha} from '../theme/alpha';
+import {__ALERTS, __COLORS, __GRAY_SCALE} from '../theme/theme';
 import {Quiz} from '../types/firestore-types';
+import {Icon, IconTypes} from './ui/Icon';
 import {Bold, Regular} from './ui/Typography';
 
 const Wrapper = styled.div<{background?: string}>`
@@ -18,7 +20,33 @@ const Wrapper = styled.div<{background?: string}>`
     box-shadow: 0 0 18px 5px rgba(0, 0, 0, 0.1);
   }
   transition: all ease-in-out 0.3s;
+  position: relative;
 `;
+
+const TRIANGLE_SIZE = 60;
+const ICON_SIZE = 25;
+
+const Triangle = styled.div<{
+  triangleColor: __COLORS | __ALERTS | __GRAY_SCALE | string;
+}>`
+  position: absolute;
+  border-left: ${TRIANGLE_SIZE}px solid transparent;
+  border-right: ${TRIANGLE_SIZE}px solid ${p => p.triangleColor};
+  border-bottom: ${TRIANGLE_SIZE}px solid transparent;
+  height: 0;
+  width: 0;
+  z-index: 2;
+  right: 0;
+  top: 0;
+`;
+
+const IconContainer = styled.div`
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  z-index: 3;
+`;
+
 type Props = {
   quiz: Quiz;
   answered: boolean;
@@ -36,17 +64,37 @@ const QuizCard: React.FC<Props> = ({quiz, answered, correct, claimable}) => {
       }
     >
       <a>
-        <Wrapper
-          background={
-            answered
-              ? correct
-                ? claimable
-                  ? 'green'
-                  : 'lightgreen'
-                : 'red'
-              : __COLORS.WHITE
-          }
-        >
+        <Wrapper background={__COLORS.WHITE}>
+          <Triangle
+            triangleColor={
+              answered
+                ? correct
+                  ? claimable
+                    ? __ALERTS.SUCCESS
+                    : alpha(0.5, __ALERTS.SUCCESS)
+                  : __ALERTS.ERROR
+                : account === quiz.ownerAddress
+                ? __GRAY_SCALE._300
+                : 'transparent'
+            }
+          />
+          <IconContainer>
+            <Icon
+              name={
+                answered
+                  ? correct
+                    ? claimable
+                      ? IconTypes.COIN
+                      : IconTypes.CLOCK
+                    : IconTypes.WRONG
+                  : account === quiz.ownerAddress
+                  ? IconTypes.SETTINGS
+                  : IconTypes.NONE
+              }
+              color={__COLORS.BLACK}
+              size={ICON_SIZE}
+            />
+          </IconContainer>
           {answered && correct && claimable && (
             <Bold center block>
               Claim Reward now!

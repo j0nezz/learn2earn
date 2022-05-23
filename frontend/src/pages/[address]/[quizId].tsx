@@ -1,6 +1,6 @@
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
-import {Spacer} from 'axelra-styled-bootstrap-grid';
+import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import {BigNumber} from 'ethers';
 import {GetServerSideProps} from 'next';
@@ -8,18 +8,22 @@ import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import {Button} from '../../components/ui/Button';
+import {Icon, IconTypes} from '../../components/ui/Icon';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Light, Medium} from '../../components/ui/Typography';
 import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
+import {__ALERTS} from '../../theme/theme';
 import {GetMerkleRootCallData} from '../../types/firebase-function-types';
 import {Quiz} from '../../types/firestore-types';
 
 type Props = {
   quiz: Quiz;
 };
+
+const ICON_SIZE = 30;
 
 const getMerkleRoot = httpsCallable<GetMerkleRootCallData, string>(
   functions,
@@ -49,13 +53,20 @@ const Index = ({quiz}: Props) => {
 
     const newTimestamp = Date.now();
 
+    const loading = toast.loading('Generating merkle root...');
     const res = await getMerkleRoot({
       quizId: quiz.quizId,
       timestamp: newTimestamp
     });
-    console.log('updating with root', res.data);
+    toast.dismiss(loading);
+
     const id = BigNumber.from(quiz.quizId);
-    console.log(id);
+    if (res.data.length === 2) {
+      toast.error(
+        'You cannot update the merkle root since there is nobody to be rewarded.'
+      );
+      return;
+    }
     const tx = await distributor.updateMerkleRoot(id, res.data, newTimestamp);
     const txConfirmation = waitAndEvaluateTx(tx);
     await toast.promise(txConfirmation, {
@@ -75,10 +86,29 @@ const Index = ({quiz}: Props) => {
       <Medium size={'xl'} block>
         {quiz.question}
       </Medium>
-      {quiz.answers.map(a => (
-        <Medium key={a.id} size={'l'} block>
-          {a.label}
-        </Medium>
+      {quiz.answers.map((a, i) => (
+        <React.Fragment key={a.id}>
+          <Spacer />
+          <Flex row>
+            {i === 0 ? (
+              <Icon
+                name={IconTypes.CORRECT}
+                color={__ALERTS.SUCCESS}
+                size={ICON_SIZE}
+              />
+            ) : (
+              <Icon
+                name={IconTypes.WRONG}
+                color={__ALERTS.ERROR}
+                size={ICON_SIZE}
+              />
+            )}
+            <Spacer />
+            <Medium size={'l'} block>
+              {a.label}
+            </Medium>
+          </Flex>
+        </React.Fragment>
       ))}
       <Spacer x2 />
       <Medium size={'xl'} block>
