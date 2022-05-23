@@ -2,18 +2,18 @@ import {Web3Provider} from '@ethersproject/providers';
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
-import {MEDIUM_DEVICES_BREAK_POINT, Spacer} from 'axelra-styled-bootstrap-grid';
+import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
 import {shuffled} from 'ethers/lib/utils';
 import {GetServerSideProps} from 'next';
 import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import {usePrevious} from 'react-use';
-import styled from 'styled-components';
 import QuizAnswers from '../../components/QuizAnswers';
 import {Button} from '../../components/ui/Button';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Medium} from '../../components/ui/Typography';
+import {VideoWrapper} from '../../components/ui/VideoWrapper';
 import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
@@ -43,13 +43,6 @@ const getMerkleProof = httpsCallable<GetMerkleProofCallData, string[]>(
   functions,
   'getMerkleProof'
 );
-
-const VideoWrapper = styled.div`
-  @media only screen and (min-width: ${MEDIUM_DEVICES_BREAK_POINT}px) {
-    max-width: min(70vw, 1000px);
-  }
-  margin: auto;
-`;
 
 const Index = ({quiz}: Props) => {
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
@@ -125,10 +118,12 @@ const Index = ({quiz}: Props) => {
           console.log('No account or distributor');
           return;
         }
+        const loading = toast.loading('Preparing claim...');
         const res2 = await getMerkleProof({
           quizId: quiz.quizId,
           address: account
         });
+        toast.dismiss(loading);
         const tx = await distributor.claim(quiz.quizId, res2.data);
         const txConfirmation = waitAndEvaluateTx(tx);
         await toast.promise(txConfirmation, {
@@ -137,6 +132,8 @@ const Index = ({quiz}: Props) => {
           error: 'Error claiming reward'
         });
       } catch (e) {
+        const message = (e as String).toString().match(/"message":"([^"]*)"/);
+        if (message && message[1]) toast.error(message[1]);
         console.log(e);
       }
     },
@@ -151,10 +148,14 @@ const Index = ({quiz}: Props) => {
 
   return (
     <PageContainer>
-      <Bold size={'xxxl'} gradient block>
-        Earn {quiz.tokenName}
-      </Bold>
-      {claimable && <Button onClick={claim}>Claim now!</Button>}
+      <Flex row>
+        <Bold size={'xxxl'} gradient block>
+          Earn {quiz.tokenName}
+        </Bold>
+        <Flex align={'center'} justify={'flex-end'} flex={1} row>
+          {claimable && <Button onClick={claim}>Claim now!</Button>}
+        </Flex>
+      </Flex>
       <VideoWrapper>
         <LiteYouTubeEmbed
           id={quiz.youtubeId}

@@ -11,6 +11,7 @@ import {Button} from '../../components/ui/Button';
 import {Icon, IconTypes} from '../../components/ui/Icon';
 import {PageContainer} from '../../components/ui/PageContainer';
 import {Bold, Light, Medium} from '../../components/ui/Typography';
+import {VideoWrapper} from '../../components/ui/VideoWrapper';
 import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
 import Web3Layout from '../../layouts/web3.layout';
@@ -81,7 +82,12 @@ const Index = ({quiz}: Props) => {
       <Bold size={'xxxl'} gradient block>
         Earn {quiz.tokenName}
       </Bold>
-      <LiteYouTubeEmbed id={quiz.youtubeId} title={'Earn ' + quiz.tokenName} />
+      <VideoWrapper>
+        <LiteYouTubeEmbed
+          id={quiz.youtubeId}
+          title={'Earn ' + quiz.tokenName}
+        />
+      </VideoWrapper>
       <Spacer x2 />
       <Medium size={'xl'} block>
         {quiz.question}
