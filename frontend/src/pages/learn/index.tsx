@@ -11,7 +11,7 @@ import React, {ReactElement, useCallback, useEffect, useState} from 'react';
 import styled from 'styled-components';
 import QuizCard from '../../components/QuizCard';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold, Medium} from '../../components/ui/Typography';
+import {Bold} from '../../components/ui/Typography';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
 import {SPACING, __COLORS} from '../../theme/theme';
@@ -88,6 +88,7 @@ const Index = ({quizes}: Props) => {
             answered={Boolean(answeredQuizes[q.quizId])}
             correct={answeredQuizes[q.quizId]?.correct}
             claimable={answeredQuizes[q.quizId]?.claimable}
+            claimed={answeredQuizes[q.quizId]?.claimed}
           />
         ))}
       </QuizesGrid>

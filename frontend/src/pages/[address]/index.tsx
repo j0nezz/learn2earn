@@ -35,6 +35,7 @@ const Index = ({quizzes}: Props) => {
             correct={false}
             answered={false}
             claimable={false}
+            claimed={false}
           />
         ))}
       </QuizesGrid>

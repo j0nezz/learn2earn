@@ -52,8 +52,15 @@ type Props = {
   answered: boolean;
   correct: boolean;
   claimable: boolean;
+  claimed: boolean;
 };
-const QuizCard: React.FC<Props> = ({quiz, answered, correct, claimable}) => {
+const QuizCard: React.FC<Props> = ({
+  quiz,
+  answered,
+  correct,
+  claimable,
+  claimed
+}) => {
   const {account} = useWeb3React();
 
   return (
@@ -69,7 +76,7 @@ const QuizCard: React.FC<Props> = ({quiz, answered, correct, claimable}) => {
             triangleColor={
               answered
                 ? correct
-                  ? claimable
+                  ? claimable || claimed
                     ? __ALERTS.SUCCESS
                     : alpha(0.5, __ALERTS.SUCCESS)
                   : __ALERTS.ERROR
@@ -83,7 +90,9 @@ const QuizCard: React.FC<Props> = ({quiz, answered, correct, claimable}) => {
               name={
                 answered
                   ? correct
-                    ? claimable
+                    ? claimed
+                      ? IconTypes.CORRECT
+                      : claimable
                       ? IconTypes.COIN
                       : IconTypes.CLOCK
                     : IconTypes.WRONG
