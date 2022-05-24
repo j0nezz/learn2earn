@@ -205,7 +205,7 @@ const Index = ({quiz}: Props) => {
               {reward} {quiz.tokenName}
             </Regular>
           </Flex>
-          {!claimable && (
+          {claimable && (
             <Flex row>
               <ButtonSpacer x4 />
               <Button onClick={claim}>Claim now!</Button>
