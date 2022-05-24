@@ -1,26 +1,49 @@
-import styled from 'styled-components'
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
-import {Flex, LARGE_DEVICES_BREAK_POINT, MEDIUM_DEVICES_BREAK_POINT, Spacer} from 'axelra-styled-bootstrap-grid';
+import {useWeb3React} from '@web3-react/core';
+import {
+  Flex,
+  MEDIUM_DEVICES_BREAK_POINT,
+  Spacer
+} from 'axelra-styled-bootstrap-grid';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import {BigNumber, ethers} from 'ethers';
 import {GetServerSideProps} from 'next';
-import React, {ReactElement, useCallback, useEffect, useMemo, useState} from 'react';
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
+import styled from 'styled-components';
 import {Button} from '../../components/ui/Button';
 import {Icon, IconTypes} from '../../components/ui/Icon';
+import {Input} from '../../components/ui/Input';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold, Light, Medium, Regular, SemiBold} from '../../components/ui/Typography';
+import {
+  Bold,
+  Light,
+  Medium,
+  Regular,
+  SemiBold
+} from '../../components/ui/Typography';
 import {VideoWrapper} from '../../components/ui/VideoWrapper';
-import {useQuizDistributor} from '../../contracts/addresses';
+import {
+  DISTRIBUTOR_CONTRACT,
+  useErc20,
+  useQuizDistributor
+} from '../../contracts/addresses';
+import {SupportedChainId} from '../../contracts/chains';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
+import {useErc20Decimals} from '../../hooks/useErc20Decimals';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
 import {__ALERTS} from '../../theme/theme';
 import {GetMerkleRootCallData} from '../../types/firebase-function-types';
 import {Quiz} from '../../types/firestore-types';
-import {useErc20Decimals} from "../../hooks/useErc20Decimals";
 
 type Props = {
   quiz: Quiz;
@@ -50,12 +73,28 @@ const RewardBanner = styled(Flex)`
 const Index = ({quiz}: Props) => {
   const distributor = useQuizDistributor();
   const [lastMerkleRoot, setLastMerkleRoot] = useState<null | Date>(null);
-
+  const erc20 = useErc20({[SupportedChainId.ROPSTEN]: quiz.token});
   const decimals = useErc20Decimals(quiz.token);
   const reward = useMemo(() => {
     if (!decimals) return '...';
     return ethers.utils.formatUnits(quiz.reward, decimals);
   }, [decimals, quiz.reward]);
+  const {account} = useWeb3React();
+  const [allowance, setAllowance] = useState<BigNumber | null>(null);
+  const [approve, setApprove] = useState('');
+
+  const getAllowance = useCallback(async () => {
+    if (!erc20 || !account) return;
+    const a = await erc20.allowance(
+      account,
+      DISTRIBUTOR_CONTRACT[SupportedChainId.ROPSTEN]
+    );
+    setAllowance(a);
+  }, [account, erc20]);
+
+  useEffect(() => {
+    getAllowance();
+  }, [getAllowance]);
 
   const getLastMerkleRoot = useCallback(async () => {
     if (!distributor) return;
@@ -70,6 +109,21 @@ const Index = ({quiz}: Props) => {
   useEffect(() => {
     getLastMerkleRoot();
   }, [getLastMerkleRoot]);
+
+  const updateAllowance = useCallback(async () => {
+    if (!erc20 || !account) return;
+    const tx = await erc20.approve(
+      DISTRIBUTOR_CONTRACT[SupportedChainId.ROPSTEN],
+      BigNumber.from(approve)
+    );
+    const txConfirmation = waitAndEvaluateTx(tx);
+    await toast.promise(txConfirmation, {
+      loading: 'Waiting for confirmation',
+      success: 'Allowance successfully updated',
+      error: 'Error updating allowance'
+    });
+    setApprove('')
+  }, [account, approve, erc20]);
 
   const setMerkleRoot = useCallback(async () => {
     if (!distributor) return;
@@ -165,6 +219,26 @@ const Index = ({quiz}: Props) => {
       </Light>
       <Spacer x2 />
       <Button onClick={setMerkleRoot}>Update Merkleroot</Button>
+      <Spacer x2 />
+      <Medium size={'xl'} block>
+        Allowance
+      </Medium>
+      <Light size={'l'} block>
+        Current allowance is {allowance ? ethers.utils.formatUnits(allowance, 0) : '...'}.
+      </Light>
+      <Spacer />
+      <Flex row align={"center"}>
+        <Input
+          value={approve}
+          placeholder={'Amount to approve'}
+          name={'approve'}
+          onTextChange={setApprove}
+          noMarginBottom
+        />
+        <Spacer x2 />
+        <Button onClick={updateAllowance}>Update Allowance</Button>
+        <Flex flex={1} />
+      </Flex>
     </PageContainer>
   );
 };
