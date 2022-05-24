@@ -11,6 +11,7 @@ export type Quiz = {
   question: string;
   answers: QuestionAnswer[];
   tokenName: string;
+  token: string;
   reward: string;
   ownerAddress: string;
 };

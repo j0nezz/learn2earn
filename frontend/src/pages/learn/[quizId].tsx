@@ -2,20 +2,34 @@ import {Web3Provider} from '@ethersproject/providers';
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
 import {useWeb3React} from '@web3-react/core';
-import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
+import {
+  Flex,
+  LARGE_DEVICES_BREAK_POINT,
+  MEDIUM_DEVICES_BREAK_POINT,
+  Spacer
+} from 'axelra-styled-bootstrap-grid';
+import {ethers} from 'ethers';
 import {shuffled} from 'ethers/lib/utils';
 import {GetServerSideProps} from 'next';
-import React, {ReactElement, useCallback, useEffect, useState} from 'react';
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import {usePrevious} from 'react-use';
+import styled from 'styled-components';
 import QuizAnswers from '../../components/QuizAnswers';
 import {Button} from '../../components/ui/Button';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold, Medium} from '../../components/ui/Typography';
+import {Bold, Medium, Regular, SemiBold} from '../../components/ui/Typography';
 import {VideoWrapper} from '../../components/ui/VideoWrapper';
 import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
+import {useErc20Decimals} from '../../hooks/useErc20Decimals';
 import Web3Layout from '../../layouts/web3.layout';
 import {db, functions} from '../../lib/firebase';
 import {
@@ -44,6 +58,29 @@ const getMerkleProof = httpsCallable<GetMerkleProofCallData, string[]>(
   'getMerkleProof'
 );
 
+const Header = styled(Flex)`
+  @media only screen and (max-width: ${LARGE_DEVICES_BREAK_POINT}px) {
+    flex-direction: column;
+  }
+`;
+
+const RewardBanner = styled(Flex)`
+  @media only screen and (max-width: ${LARGE_DEVICES_BREAK_POINT}px) {
+    justify-content: space-between;
+  }
+  @media only screen and (max-width: ${MEDIUM_DEVICES_BREAK_POINT}px) {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+`;
+
+const ButtonSpacer = styled(Spacer)`
+  @media only screen and (max-width: ${LARGE_DEVICES_BREAK_POINT}px) {
+    display: none;
+  }
+`;
+
 const Index = ({quiz}: Props) => {
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
@@ -52,6 +89,12 @@ const Index = ({quiz}: Props) => {
   const [claimable, setClaimable] = useState(false);
   const {account, library} = useWeb3React();
   const distributor = useQuizDistributor();
+  const decimals = useErc20Decimals(quiz.token);
+
+  const reward = useMemo(() => {
+    if (!decimals) return '...';
+    return ethers.utils.formatUnits(quiz.reward, decimals);
+  }, [decimals, quiz.reward]);
 
   const prevAccount = usePrevious(account);
 
@@ -148,14 +191,29 @@ const Index = ({quiz}: Props) => {
 
   return (
     <PageContainer>
-      <Flex row>
+      <Header row>
         <Bold size={'xxxl'} gradient block>
           Earn {quiz.tokenName}
         </Bold>
-        <Flex align={'center'} justify={'flex-end'} flex={1} row>
-          {claimable && <Button onClick={claim}>Claim now!</Button>}
-        </Flex>
-      </Flex>
+        <RewardBanner align={'center'} justify={'flex-end'} flex={1} row>
+          <Flex row>
+            <SemiBold size={'xl'} gradient block>
+              Reward:
+            </SemiBold>
+            <Spacer />
+            <Regular size={'xl'} gradient block>
+              {reward} {quiz.tokenName}
+            </Regular>
+          </Flex>
+          {!claimable && (
+            <Flex row>
+              <ButtonSpacer x4 />
+              <Button onClick={claim}>Claim now!</Button>
+            </Flex>
+          )}
+        </RewardBanner>
+      </Header>
+      <Spacer x3 />
       <VideoWrapper>
         <LiteYouTubeEmbed
           id={quiz.youtubeId}

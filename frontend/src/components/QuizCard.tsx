@@ -1,14 +1,15 @@
 import {useWeb3React} from '@web3-react/core';
 import {Spacer} from 'axelra-styled-bootstrap-grid';
-import {ethers} from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import Link from 'next/link';
-import React from 'react';
+import React, {useMemo} from 'react';
 import styled from 'styled-components';
 import {alpha} from '../theme/alpha';
 import {__ALERTS, __COLORS, __GRAY_SCALE} from '../theme/theme';
 import {Quiz} from '../types/firestore-types';
 import {Icon, IconTypes} from './ui/Icon';
 import {Bold, Regular} from './ui/Typography';
+import {useErc20Decimals} from "../hooks/useErc20Decimals";
 
 const Wrapper = styled.div<{background?: string}>`
   background: ${p => p.background ?? __COLORS.WHITE};
@@ -62,6 +63,12 @@ const QuizCard: React.FC<Props> = ({
   claimed
 }) => {
   const {account} = useWeb3React();
+  const decimals = useErc20Decimals(quiz.token)
+
+  const reward = useMemo(() => {
+    if (!decimals) return '...'
+    return ethers.utils.formatUnits(quiz.reward, decimals)
+  }, [decimals, quiz.reward])
 
   return (
     <Link
@@ -114,7 +121,7 @@ const QuizCard: React.FC<Props> = ({
           </Bold>
           <Spacer x2 />
           <Regular block center>
-            Reward: {ethers.utils.formatUnits(quiz.reward)} {quiz.tokenName}
+            Reward: {reward} {quiz.tokenName}
           </Regular>
         </Wrapper>
       </a>

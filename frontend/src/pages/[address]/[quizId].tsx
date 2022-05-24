@@ -1,16 +1,17 @@
+import styled from 'styled-components'
 import {doc, DocumentReference, getDoc} from '@firebase/firestore';
 import {httpsCallable} from '@firebase/functions';
-import {Flex, Spacer} from 'axelra-styled-bootstrap-grid';
+import {Flex, LARGE_DEVICES_BREAK_POINT, MEDIUM_DEVICES_BREAK_POINT, Spacer} from 'axelra-styled-bootstrap-grid';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
-import {BigNumber} from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import {GetServerSideProps} from 'next';
-import React, {ReactElement, useCallback, useEffect, useState} from 'react';
+import React, {ReactElement, useCallback, useEffect, useMemo, useState} from 'react';
 import {toast} from 'react-hot-toast';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import {Button} from '../../components/ui/Button';
 import {Icon, IconTypes} from '../../components/ui/Icon';
 import {PageContainer} from '../../components/ui/PageContainer';
-import {Bold, Light, Medium} from '../../components/ui/Typography';
+import {Bold, Light, Medium, Regular, SemiBold} from '../../components/ui/Typography';
 import {VideoWrapper} from '../../components/ui/VideoWrapper';
 import {useQuizDistributor} from '../../contracts/addresses';
 import {waitAndEvaluateTx} from '../../helpers/waitAndEvaluateTx';
@@ -19,6 +20,7 @@ import {db, functions} from '../../lib/firebase';
 import {__ALERTS} from '../../theme/theme';
 import {GetMerkleRootCallData} from '../../types/firebase-function-types';
 import {Quiz} from '../../types/firestore-types';
+import {useErc20Decimals} from "../../hooks/useErc20Decimals";
 
 type Props = {
   quiz: Quiz;
@@ -31,9 +33,29 @@ const getMerkleRoot = httpsCallable<GetMerkleRootCallData, string>(
   'getMerkleRoot'
 );
 
+const Header = styled(Flex)`
+  @media only screen and (max-width: ${MEDIUM_DEVICES_BREAK_POINT}px) {
+    flex-direction: column;
+  }
+`;
+
+const RewardBanner = styled(Flex)`
+  @media only screen and (max-width: ${MEDIUM_DEVICES_BREAK_POINT}px) {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+`;
+
 const Index = ({quiz}: Props) => {
   const distributor = useQuizDistributor();
   const [lastMerkleRoot, setLastMerkleRoot] = useState<null | Date>(null);
+
+  const decimals = useErc20Decimals(quiz.token);
+  const reward = useMemo(() => {
+    if (!decimals) return '...';
+    return ethers.utils.formatUnits(quiz.reward, decimals);
+  }, [decimals, quiz.reward]);
 
   const getLastMerkleRoot = useCallback(async () => {
     if (!distributor) return;
@@ -79,9 +101,23 @@ const Index = ({quiz}: Props) => {
 
   return (
     <PageContainer>
-      <Bold size={'xxxl'} gradient block>
-        Earn {quiz.tokenName}
-      </Bold>
+      <Header row>
+        <Bold size={'xxxl'} gradient block>
+          Earn {quiz.tokenName}
+        </Bold>
+        <RewardBanner align={'center'} justify={'flex-end'} flex={1} row>
+          <Flex row>
+            <SemiBold size={'xl'} gradient block>
+              Reward:
+            </SemiBold>
+            <Spacer />
+            <Regular size={'xl'} gradient block>
+              {reward} {quiz.tokenName}
+            </Regular>
+          </Flex>
+        </RewardBanner>
+      </Header>
+      <Spacer x3 />
       <VideoWrapper>
         <LiteYouTubeEmbed
           id={quiz.youtubeId}
